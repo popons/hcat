@@ -1,0 +1,45 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'hcat'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=hcat",
+                    "--package=hcat"
+                ],
+                "filter": {
+                    "name": "hcat",
+                    "kind": "bin"
+                }
+            },
+            "args": ["a.txt"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'hcat'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=hcat",
+                    "--package=hcat"
+                ],
+                "filter": {
+                    "name": "hcat",
+                    "kind": "bin"
+                }
+            },
+            "args": ["321","543"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
