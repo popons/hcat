@@ -28,12 +28,11 @@ fn to_lines<P: AsRef<Path>>(path: P) -> Result<(P, Vec<String>), Error> {
 }
 
 fn to_lines_collection(files: &Vec<String>) -> Vec<(&String, Vec<String>)> {
-    let lines_coll = files
+    files
         .iter()
         .map(|x| to_lines(x))
         .filter_map(Result::ok)
-        .collect::<Vec<(&String, Vec<String>)>>();
-    lines_coll
+        .collect::<Vec<(&String, Vec<String>)>>()
 }
 
 fn print_body(lines_coll: Vec<&Vec<String>>) {
