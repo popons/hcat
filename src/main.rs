@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Error};
+use std::io::{self, BufRead, BufReader, Error, Write};
 use std::path::Path;
 
 /// Simple program to greet a person
@@ -25,15 +25,16 @@ struct Args {
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
+    let mut out = io::stdout();
     let sep = &args.sep;
     let files = args.files;
     let lines_coll_ = to_lines_collection(&files);
     let files_: Vec<&String> = lines_coll_.iter().map(|(a, _)| *a).collect();
     let lines_coll: Vec<&Vec<String>> = lines_coll_.iter().map(|(_, b)| b).collect();
     if args.head {
-        print_header(&files_, sep);
+        print_header(&mut out, &files_, sep)?;
     }
-    print_body(&lines_coll, args.skip, sep);
+    print_body(&mut out, &lines_coll, args.skip, sep)?;
     Ok(())
 }
 
@@ -53,7 +54,12 @@ fn to_lines_collection(files: &Vec<String>) -> Vec<(&String, Vec<String>)> {
         .collect()
 }
 
-fn print_body(lines_coll: &Vec<&Vec<String>>, skip: usize, sep: &String) {
+fn print_body(
+    w: &mut dyn Write,
+    lines_coll: &Vec<&Vec<String>>,
+    skip: usize,
+    sep: &String,
+) -> Result<(), Error> {
     let empty = "".to_string();
     for i in skip.. {
         if lines_coll.iter().all(|x| x.get(i) == None) {
@@ -61,21 +67,23 @@ fn print_body(lines_coll: &Vec<&Vec<String>>, skip: usize, sep: &String) {
         }
         for (j, x) in lines_coll.iter().enumerate() {
             if j != 0 {
-                print!("{}", sep);
+                write!(w, "{}", sep)?;
             }
             let v = x.get(i);
-            print!("{}", v.unwrap_or(&empty));
+            write!(w, "{}", v.unwrap_or(&empty))?;
         }
-        println!("");
+        writeln!(w, "")?;
     }
+    Ok(())
 }
 
-fn print_header(files: &Vec<&String>, sep: &String) {
+fn print_header(w: &mut dyn Write, files: &Vec<&String>, sep: &String) -> Result<(), Error> {
     for (i, x) in files.iter().enumerate() {
         if i != 0 {
-            print!("{}", sep);
+            write!(w, "{}", sep)?;
         }
-        print!("{}", x);
+        write!(w, "{}", x)?;
     }
-    println!("");
+    writeln!(w, "")?;
+    Ok(())
 }
