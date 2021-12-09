@@ -5,13 +5,10 @@ Typical use is to create a csv file.
 
 
 ```usage
-
-hcat 0.1.0
-
-Simple program to greet a person
+horizontal cat(concatenate) program
 
 USAGE:
-    hcat [OPTIONS] [FILES]...
+    hcat.exe [OPTIONS] [FILES]...
 
 ARGS:
     <FILES>...    Names of read files
@@ -19,7 +16,8 @@ ARGS:
 OPTIONS:
     -h, --head               print header as file name
         --help               Print help information
-    -o, --output <OUTPUT>    Output to write
+    -o, --output <OUTPUT>    output file to write
     -s, --sep <SEP>          Separator when print items [default: ,]
     -V, --version            Print version information
+
 ```
