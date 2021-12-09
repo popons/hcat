@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Error, Write};
 use std::path::Path;
 
-/// Simple program to greet a person
+/// horizontal cat(concatenate) program
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
 struct Args {
@@ -22,7 +22,7 @@ struct Args {
     #[clap(short, long, default_value = ",")]
     sep: String,
 
-    /// Output to write
+    /// output file to write
     #[clap(short, long)]
     output: Option<String>,
 }
