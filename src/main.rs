@@ -5,14 +5,17 @@ use std::path::Path;
 
 fn main() -> Result<(), Error> {
     let files = args().skip(1).collect::<Vec<String>>();
-    let lines_coll = to_lines_collection(&files);
-    let files_ = lines_coll.iter().map(|(a, _)| *a).collect::<Vec<&String>>();
-    let bodies = lines_coll
+    let lines_coll_ = to_lines_collection(&files);
+    let files_ = lines_coll_
+        .iter()
+        .map(|(a, _)| *a)
+        .collect::<Vec<&String>>();
+    let lines_coll = lines_coll_
         .iter()
         .map(|(_, b)| b)
         .collect::<Vec<&Vec<String>>>();
     print_header(files_);
-    print_body(bodies);
+    print_body(lines_coll);
     Ok(())
 }
 
