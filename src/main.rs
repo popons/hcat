@@ -21,20 +21,33 @@ struct Args {
     /// Separator when print items
     #[clap(short, long, default_value = ",")]
     sep: String,
+
+    /// Output to write
+    #[clap(short, long)]
+    output: Option<String>,
+}
+
+fn output(s: &Option<String>) -> Result<Box<dyn Write>, Error> {
+    if let Some(s) = s {
+        let f = File::create(s)?;
+        Ok(Box::new(f))
+    } else {
+        Ok(Box::new(io::stdout()))
+    }
 }
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
-    let mut out = io::stdout();
+    let mut output = output(&args.output)?;
     let sep = &args.sep;
     let files = args.files;
     let lines_coll_ = to_lines_collection(&files);
     let files_: Vec<&String> = lines_coll_.iter().map(|(a, _)| *a).collect();
     let lines_coll: Vec<&Vec<String>> = lines_coll_.iter().map(|(_, b)| b).collect();
     if args.head {
-        print_header(&mut out, &files_, sep)?;
+        print_header(&mut output, &files_, sep)?;
     }
-    print_body(&mut out, &lines_coll, args.skip, sep)?;
+    print_body(&mut output, &lines_coll, args.skip, sep)?;
     Ok(())
 }
 
