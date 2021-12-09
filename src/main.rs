@@ -1,6 +1,15 @@
+use std::env::args;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Error, ErrorKind};
+use std::io::{BufRead, BufReader, Error};
 use std::path::Path;
+
+fn main() -> Result<(), Error> {
+    let files = args().skip(1).collect::<Vec<String>>();
+    let lines_coll = to_lines_collection(&files);
+    print_header(files);
+    print_body(lines_coll);
+    Ok(())
+}
 
 fn to_lines(path: impl AsRef<Path>) -> Result<Vec<String>, Error> {
     let f = File::open(path)?;
@@ -9,14 +18,38 @@ fn to_lines(path: impl AsRef<Path>) -> Result<Vec<String>, Error> {
     Ok(lines.collect::<Result<Vec<String>, Error>>()?)
 }
 
-fn main() -> Result<(), Error> {
-    let xs = std::env::args().collect::<Vec<String>>();
-    let p = xs
-        .get(1)
-        .ok_or(Error::new(ErrorKind::Other, "arg invalid"))?;
-    let xs = to_lines(p)?;
-    for x in xs.iter() {
-        println!("{}", x);
+fn to_lines_collection(files: &Vec<String>) -> Vec<Vec<String>> {
+    let lines_coll = files
+        .iter()
+        .map(|x| to_lines(x))
+        .filter_map(Result::ok)
+        .collect::<Vec<Vec<String>>>();
+    lines_coll
+}
+
+fn print_body(lines_coll: Vec<Vec<String>>) {
+    let empty = "".to_string();
+    for i in 0.. {
+        if lines_coll.iter().all(|x| x.get(i) == None) {
+            break;
+        }
+        for (j, x) in lines_coll.iter().enumerate() {
+            if j != 0 {
+                print!(",");
+            }
+            let v = x.get(i);
+            print!("{}", v.unwrap_or(&empty));
+        }
+        println!("");
     }
-    Ok(())
+}
+
+fn print_header(files: Vec<String>) {
+    for (i, x) in files.iter().enumerate() {
+        if i != 0 {
+            print!(",");
+        }
+        print!("{}", x);
+    }
+    println!("");
 }
