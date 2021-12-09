@@ -1,7 +1,7 @@
 ### horizontal cat(concatenate) program
 
-複数個のファイルを読み出して、水平方向に結合して出力する。    
-典型的用途してはcsvファイルの作成に使う。  
+Reads multiple files and combines them horizontally for output.  
+Typical use is to create a csv file.  
 
 
 ```usage
@@ -23,4 +23,3 @@ OPTIONS:
     -s, --sep <SEP>          Separator when print items [default: ,]
     -V, --version            Print version information
 ```
-

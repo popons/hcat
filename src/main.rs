@@ -27,15 +27,6 @@ struct Args {
     output: Option<String>,
 }
 
-fn output(s: &Option<String>) -> Result<Box<dyn Write>, Error> {
-    if let Some(s) = s {
-        let f = File::create(s)?;
-        Ok(Box::new(f))
-    } else {
-        Ok(Box::new(io::stdout()))
-    }
-}
-
 fn main() -> Result<(), Error> {
     let args = Args::parse();
     let mut output = output(&args.output)?;
@@ -49,6 +40,15 @@ fn main() -> Result<(), Error> {
     }
     print_body(&mut output, &lines_coll, args.skip, sep)?;
     Ok(())
+}
+
+fn output(s: &Option<String>) -> Result<Box<dyn Write>, Error> {
+    if let Some(s) = s {
+        let f = File::create(s)?;
+        Ok(Box::new(f))
+    } else {
+        Ok(Box::new(io::stdout()))
+    }
 }
 
 fn to_lines<P: AsRef<Path>>(path: P) -> Result<(P, Vec<String>), Error> {
