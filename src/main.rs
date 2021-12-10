@@ -1,12 +1,11 @@
 use clap::Parser;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, BufWriter, Error, Write};
-use std::path::Path;
 
 /// horizontal cat(concatenate) program
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
-struct Args {
+struct Opt {
     /// Names of read files
     files: Vec<String>,
 
@@ -25,20 +24,24 @@ struct Args {
     /// output file to write
     #[clap(short, long)]
     output: Option<String>,
+
+    /// Align the output width
+    #[clap(short, long)]
+    pretty: bool,
 }
 
 fn main() -> Result<(), Error> {
-    let args = Args::parse();
-    let mut output = output(&args.output)?;
-    let sep = &args.sep;
-    let files = args.files;
-    let lines_coll_ = to_lines_collection(&files);
+    let opt = Opt::parse();
+    let mut output = output(&opt.output)?;
+    let sep = &opt.sep;
+    let files = &opt.files;
+    let lines_coll_ = to_lines_collection(files, &opt);
     let files_: Vec<&String> = lines_coll_.iter().map(|(a, _)| *a).collect();
-    let lines_coll: Vec<&Vec<String>> = lines_coll_.iter().map(|(_, b)| b).collect();
-    if args.head {
+    let lines_coll: Vec<&Column> = lines_coll_.iter().map(|(_, b)| b).collect();
+    if opt.head {
         print_header(&mut output, &files_, sep)?;
     }
-    print_body(&mut output, &lines_coll, args.skip, sep)?;
+    print_body(&mut output, &lines_coll, opt.skip, sep)?;
     Ok(())
 }
 
@@ -53,39 +56,56 @@ fn output(s: &Option<String>) -> Result<Box<dyn Write>, Error> {
     }
 }
 
-fn to_lines<P: AsRef<Path>>(path: P) -> Result<(P, Vec<String>), Error> {
-    let f = File::open(&path)?;
+struct Column {
+    rows: Vec<String>,
+    width: usize,
+}
+
+fn to_lines<'a>(path: &'a String, opt: &Opt) -> Result<(&'a String, Column), Error> {
+    let f = File::open(path)?;
     let r = BufReader::new(f);
     let lines = r.lines();
     let xs = lines.collect::<Result<Vec<String>, Error>>()?;
-    Ok((path, xs))
+    let _width = xs.iter().skip(opt.skip).map(|x| x.len()).max().unwrap_or(0);
+    let width = if opt.head {
+        std::cmp::max(_width, path.len())
+    } else {
+        _width
+    };
+    Ok((
+        path,
+        Column {
+            rows: xs,
+            width: width,
+        },
+    ))
 }
 
-fn to_lines_collection(files: &Vec<String>) -> Vec<(&String, Vec<String>)> {
+fn to_lines_collection<'a>(files: &'a Vec<String>, opt: &Opt) -> Vec<(&'a String, Column)> {
     files
         .iter()
-        .map(|x| to_lines(x))
+        .map(|x| to_lines(x, opt))
         .filter_map(Result::ok)
         .collect()
 }
 
 fn print_body(
     w: &mut dyn Write,
-    lines_coll: &Vec<&Vec<String>>,
+    lines_coll: &Vec<&Column>,
     skip: usize,
     sep: &String,
 ) -> Result<(), Error> {
     let empty = "".to_string();
     for i in skip.. {
-        if lines_coll.iter().all(|x| x.get(i) == None) {
+        if lines_coll.iter().all(|x| x.rows.get(i) == None) {
             break;
         }
         for (j, x) in lines_coll.iter().enumerate() {
             if j != 0 {
                 write!(w, "{}", sep)?;
             }
-            let v = x.get(i);
-            write!(w, "{}", v.unwrap_or(&empty))?;
+            let v = x.rows.get(i);
+            write!(w, "{:>width$}", v.unwrap_or(&empty), width = x.width)?;
         }
         writeln!(w, "")?;
     }
