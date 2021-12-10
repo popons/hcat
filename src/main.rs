@@ -66,11 +66,13 @@ fn to_lines<'a>(path: &'a String, opt: &Opt) -> Result<(&'a String, Column), Err
     let r = BufReader::new(f);
     let lines = r.lines();
     let xs = lines.collect::<Result<Vec<String>, Error>>()?;
-    let _width = xs.iter().skip(opt.skip).map(|x| x.len()).max().unwrap_or(0);
-    let width = if opt.head {
-        std::cmp::max(_width, path.len())
-    } else {
-        _width
+    let width = {
+        let width = xs.iter().skip(opt.skip).map(|x| x.len()).max().unwrap_or(0);
+        if opt.head {
+            std::cmp::max(width, path.len())
+        } else {
+            width
+        }
     };
     Ok((
         path,
