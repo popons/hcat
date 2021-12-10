@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Error, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Error, Write};
 use std::path::Path;
 
 /// horizontal cat(concatenate) program
@@ -45,9 +45,11 @@ fn main() -> Result<(), Error> {
 fn output(s: &Option<String>) -> Result<Box<dyn Write>, Error> {
     if let Some(s) = s {
         let f = File::create(s)?;
-        Ok(Box::new(f))
+        let b = BufWriter::new(f);
+        Ok(Box::new(b))
     } else {
-        Ok(Box::new(io::stdout()))
+        let b = BufWriter::new(io::stdout());
+        Ok(Box::new(b))
     }
 }
 
